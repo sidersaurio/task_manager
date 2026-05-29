@@ -2,6 +2,8 @@ const taskForm = document.getElementById("task-form");
 
 const taskList = document.getElementById("task-list");
 
+loadTasksFromLocalStorage();
+
 taskForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -12,6 +14,7 @@ taskForm.addEventListener("submit", (event) => {
 
   if (task) {
     taskList.append(createTaskElement(task));
+    storeTaskInLocalStorage(task);
     taskInput.value = "";
   }
 });
@@ -19,7 +22,7 @@ taskForm.addEventListener("submit", (event) => {
 function createTaskElement(task) {
   const li = document.createElement("li");
   li.textContent = task;
-  li.append(createButton("âŒ", "delete-btn"), createButton("âœï¸", "edit-btn"));
+  li.append(createButton("❌", "delete-btn"), createButton("✏️", "edit-btn"));
   return li;
 }
 
@@ -29,3 +32,41 @@ function createButton(text, className) {
   btn.className = className;
   return btn;
 }
+
+taskList.addEventListener("click", (event) => {
+  if (event.target.classList.contains("delete-btn")) {
+    deleteTask(event.target.parentElement);
+  }
+
+  else if (event.target.classList.contains("edit-btn")) {
+    editTask(event.target.parentElement);
+  }
+});
+
+function deleteTask(taskItem) {
+  if(confirm("Estás seguro de que quieres eliminar esta tarea?")) {
+    taskItem.remove();
+  }
+}
+
+function editTask(taskItem) {
+  const newTask = prompt("Edita la tarea:", taskItem.firstChild.textContent);
+  if (newTask !== null) {
+    taskItem.firstChild.textContent = newTask;
+  }
+}
+
+function storeTaskInLocalStorage(task) {
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks.push(task);
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+function loadTasksFromLocalStorage() {
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks.forEach((task) => {
+    taskList.appendChild(createTaskElement(task));
+  });
+}
+
+document.addEventListener("DOMContentLoaded", loadTasksFromLocalStorage);
